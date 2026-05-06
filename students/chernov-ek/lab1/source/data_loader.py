@@ -7,7 +7,6 @@ from imblearn.under_sampling import RandomUnderSampler
 import numpy as np
 import pandas as pd
 import requests
-from sklearn.preprocessing import OrdinalEncoder
 
 
 # Базовые пути проекта и архива с датасетом.
@@ -100,7 +99,8 @@ def balance_train_dataset(
     features: np.ndarray,
     labels: np.ndarray,
     feature_names,
-    dataframe: pd.DataFrame,
+    encoder,
+    save_categorical: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Балансирует обучающую выборку с помощью oversampling и undersampling.
@@ -134,9 +134,7 @@ def balance_train_dataset(
     ]
 
     # Кодируем только категориальные признаки, чтобы вернуть их после ресемплинга.
-    encoder = None
     if categorical_feature_names:
-        encoder = OrdinalEncoder()
         features_dataframe[categorical_feature_names] = encoder.fit_transform(
             features_dataframe[categorical_feature_names]
         )
@@ -174,9 +172,17 @@ def balance_train_dataset(
 
     # Возвращаем категориальные значения обратно в исходный вид для дерева.
     restored_features = pd.DataFrame(balanced_features, columns=feature_names)
-    if categorical_feature_names and encoder is not None:
-        restored_features[categorical_feature_names] = encoder.inverse_transform(
-            restored_features[categorical_feature_names]
-        )
+    if save_categorical:
+        if categorical_feature_names and encoder is not None:
+            restored_features[categorical_feature_names] = encoder.inverse_transform(
+                restored_features[categorical_feature_names]
+            )
 
     return np.array(restored_features, dtype=object), np.array(balanced_labels)
+
+
+def convert_categorical_features(
+    x: np.ndarray, encoder, feature_inds: list[int]
+) -> np.ndarray:
+    x[:, feature_inds] = encoder.transform(x[:, feature_inds])
+    return x
