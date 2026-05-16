@@ -1,0 +1,21 @@
+# System files
+.DS_Store
+
+# Python cache and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Downloaded/raw data
+data/
+
+# Generated duplicate/raw result files
+
+results/grid_search_results.csv
+
+# Keep plot images used by README
+!results/
+!results/plots/
+!results/plots/*.png
